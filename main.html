@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula One Circuits Management</title>
+    <script>
+        const apiUrl = 'http://localhost/webservice/index.php'; 
+    
+        async function displayAllCircuits() {
+            const circuitsContainer = document.getElementById('circuitsContainer');
+            try {
+                const circuits = await getAllCircuits();
+                circuitsContainer.innerHTML = ''; 
+                circuits.forEach(circuit => {
+                    const circuitItem = document.createElement('div');
+                    circuitItem.textContent = `ID: ${circuit.circuito_id} - Name: ${circuit.nome_circuito}`;
+                    circuitsContainer.appendChild(circuitItem);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                circuitsContainer.innerHTML = '<p>An error occurred while fetching circuits.</p>';
+            }
+        }
+    
+        async function getAllCircuits() {
+            const response = await fetch(apiUrl + '/circuiti');
+            const data = await response.json();
+            return data;
+        }
+    
+        async function addCircuit(circuitName) {
+            const response = await fetch(apiUrl + '/circuiti', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nome_circuito: circuitName })
+            });
+            const data = await response.json();
+            return data;
+        }
+    
+        async function updateCircuit(circuitId, newName) {
+            const response = await fetch(apiUrl + `/circuiti/${circuitId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nome_circuito: newName })
+            });
+            const data = await response.json();
+            return data;
+        }
+    
+        async function deleteCircuit(circuitId) {
+            const response = await fetch(apiUrl + `/circuiti/${circuitId}`, {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+            return data;
+        }
+    
+        async function addNewCircuit(event) {
+            event.preventDefault();
+            const circuitName = document.getElementById('newCircuitName').value;
+            if (circuitName.trim() !== '') {
+                try {
+                    const response = await addCircuit(circuitName);
+                    alert(response.message);
+                    displayAllCircuits();
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the circuit.');
+                }
+            } else {
+                alert('Please enter a valid circuit name.');
+            }
+        }
+    
+        async function updateExistingCircuit(event) {
+            event.preventDefault();
+            const circuitId = document.getElementById('updateCircuitId').value;
+            const newName = document.getElementById('updatedCircuitName').value;
+            if (circuitId.trim() !== '' && newName.trim() !== '') {
+                try {
+                    const response = await updateCircuit(circuitId, newName);
+                    alert(response.message);
+                    displayAllCircuits();
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the circuit.');
+                }
+            } else {
+                alert('Please enter valid circuit ID and new name.');
+            }
+        }
+    
+        async function deleteExistingCircuit(event) {
+            event.preventDefault();
+            const circuitId = document.getElementById('deleteCircuitId').value;
+            if (circuitId.trim() !== '') {
+                if (confirm('Are you sure you want to delete this circuit?')) {
+                    try {
+                        const response = await deleteCircuit(circuitId);
+                        alert(response.message);
+                        displayAllCircuits();
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the circuit.');
+                    }
+                }
+            } else {
+                alert('Please enter valid circuit ID.');
+            }
+        }
+    
+        window.onload = displayAllCircuits;
+    </script>
+    
+</head>
+<body>
+    <h1>Formula One Circuits Management</h1>
+
+    
+    <h2>All Circuits</h2>
+    <div id="circuitsContainer"></div>
+
+    
+    <h2>Add New Circuit</h2>
+    <form onsubmit="addNewCircuit(event)">
+        <label for="newCircuitName">Circuit Name:</label>
+        <input type="text" id="newCircuitName" required>
+        <button type="submit">Add Circuit</button>
+    </form>
+
+    
+    <h2>Update Circuit</h2>
+    <form onsubmit="updateExistingCircuit(event)">
+        <label for="updateCircuitId">Circuit ID:</label>
+        <input type="text" id="updateCircuitId" required>
+        <label for="updatedCircuitName">New Circuit Name:</label>
+        <input type="text" id="updatedCircuitName" required>
+        <button type="submit">Update Circuit</button>
+    </form>
+
+    
+    <h2>Delete Circuit</h2>
+    <form onsubmit="deleteExistingCircuit(event)">
+        <label for="deleteCircuitId">Circuit ID:</label>
+        <input type="text" id="deleteCircuitId" required>
+        <button type="submit">Delete Circuit</button>
+    </form>
+</body>
+</html>
